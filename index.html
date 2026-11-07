@@ -127,8 +127,8 @@
         event.preventDefault();
         if (!form.reportValidity()) return;
 
-        if (!tg || typeof tg.sendData !== 'function') {
-          status.textContent = 'Відкрийте цю сторінку через Telegram-бота, щоб надіслати дані.';
+        if (!tg || typeof tg.switchInlineQuery !== 'function') {
+          status.textContent = 'Відкрийте цю сторінку через Telegram, щоб продовжити.';
           return;
         }
 
@@ -138,14 +138,14 @@
         } else {
           lines.push(`A-95: ${a95.value}`, `DT: ${dt.value}`);
         }
+        const message = lines.join('\n');
 
         try {
-          tg.sendData(lines.join('\n'));
-          sendButton.disabled = true;
-          status.textContent = 'Дані надіслано.';
+          // Telegram opens inline mode with this text; the user may need to select a group.
+          tg.switchInlineQuery(message, ['groups']);
         } catch (error) {
-          status.textContent = 'Не вдалося надіслати дані. Спробуйте ще раз.';
-          console.error('Telegram Web App sendData failed:', error);
+          status.textContent = 'Не вдалося відкрити inline-режим. Спробуйте ще раз.';
+          console.error('Telegram Web App switchInlineQuery failed:', error);
         }
       });
     })();
