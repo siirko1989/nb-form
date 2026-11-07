@@ -128,7 +128,7 @@
         if (!form.reportValidity()) return;
 
         if (!tg || typeof tg.sendData !== 'function') {
-          status.textContent = 'Відкрийте цю сторінку через Telegram-бота, щоб надіслати дані.';
+          status.textContent = 'Надсилання через sendData доступне лише для Mini App, відкритої кнопкою web_app у клавіатурі бота. Для кнопки меню потрібен серверний обробник.';
           return;
         }
 
@@ -142,11 +142,11 @@
 
         try {
           tg.sendData(message);
-          sendButton.disabled = true;
-          status.textContent = 'Дані надіслано боту.';
+          tg.close();
         } catch (error) {
-          status.textContent = 'Не вдалося надіслати дані. ��пробуйте ще раз.';
+          status.textContent = 'Не вдалося надіслати дані. Спробуйте ще раз.';
           console.error('Telegram Web App sendData failed:', error);
+          sendButton.disabled = false;
         }
       });
     })();
