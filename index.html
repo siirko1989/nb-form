@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#ffffff">
+  <title>Send feedback</title>
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <style>
+    :root {
+      color-scheme: light dark;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --bg: var(--tg-theme-bg-color, #ffffff);
+      --text: var(--tg-theme-text-color, #17212b);
+      --hint: var(--tg-theme-hint-color, #708499);
+      --button: var(--tg-theme-button-color, #2481cc);
+      --button-text: var(--tg-theme-button-text-color, #ffffff);
+      --field: var(--tg-theme-secondary-bg-color, #f1f3f5);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      padding: max(24px, env(safe-area-inset-top)) 20px max(24px, env(safe-area-inset-bottom));
+      background: var(--bg);
+      color: var(--text);
+    }
+    main { width: min(100%, 520px); margin: 0 auto; }
+    h1 { margin: 0 0 8px; font-size: 1.5rem; }
+    p { margin: 0 0 22px; color: var(--hint); line-height: 1.5; }
+    label { display: block; margin-bottom: 8px; font-weight: 600; }
+    textarea {
+      display: block;
+      width: 100%;
+      min-height: 150px;
+      padding: 12px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--field);
+      color: var(--text);
+      font: inherit;
+      resize: vertical;
+    }
+    button {
+      width: 100%;
+      margin-top: 16px;
+      padding: 13px 16px;
+      border: 0;
+      border-radius: 12px;
+      background: var(--button);
+      color: var(--button-text);
+      font: inherit;
+      font-weight: 650;
+      cursor: pointer;
+    }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    #status { min-height: 1.5em; margin-top: 12px; font-size: .95rem; }
+    .privacy { margin-top: 18px; font-size: .85rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>Send feedback</h1>
+    <p>Write a message for the bot. Your message will be sent when you tap the button.</p>
+    <form id="feedback-form">
+      <label for="message">Your message</label>
+      <textarea id="message" name="message" maxlength="4000" required placeholder="Type your feedback…"></textarea>
+      <button id="send" type="submit">Send to bot</button>
+      <div id="status" role="status" aria-live="polite"></div>
+    </form>
+    <p class="privacy">Only the message you enter is included in the submitted data.</p>
+  </main>
+  <script>
+    (() => {
+      const tg = window.Telegram?.WebApp;
+      const form = document.getElementById('feedback-form');
+      const messageInput = document.getElementById('message');
+      const sendButton = document.getElementById('send');
+      const status = document.getElementById('status');
+
+      if (tg) {
+        tg.ready();
+        tg.expand();
+      }
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const message = messageInput.value.trim();
+        if (!message) {
+          messageInput.focus();
+          status.textContent = 'Please enter a message.';
+          return;
+        }
+        if (!tg || typeof tg.sendData !== 'function') {
+          status.textContent = 'Open this page from your Telegram bot to send feedback.';
+          return;
+        }
+
+        try {
+          // sendData accepts a string; JSON keeps the submitted payload structured.
+          tg.sendData(JSON.stringify({ type: 'feedback', message }));
+          sendButton.disabled = true;
+          status.textContent = 'Feedback sent.';
+        } catch (error) {
+          status.textContent = 'Could not send your message. Please try again.';
+          console.error('Telegram Web App sendData failed:', error);
+        }
+      });
+    })();
+  </script>
+</body>
+</html>
